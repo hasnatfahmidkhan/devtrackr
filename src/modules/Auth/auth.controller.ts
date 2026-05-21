@@ -1,5 +1,5 @@
 import type { NextFunction } from "express";
-import type { jwtPayload, TReq, TRes } from "../../types";
+import type { TReq, TRes } from "../../types";
 import asyncHandler from "../../utils/asyncHandler";
 import type {
   LoginBody,

@@ -1,6 +1,6 @@
 import type { TRes } from "../types";
 
-export const sendResponse = <T>(
+export const sendResponse = async <T>(
   res: TRes,
   {
     message,
