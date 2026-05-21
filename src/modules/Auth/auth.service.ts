@@ -6,7 +6,7 @@ class AtuhService {
   async findUserByEmail(email: string): Promise<UserResponse | null> {
     const result = await pool.query(
       `SELECT email
-       FROM users WHERE email = $1 LIMIT 1;`, // return only 1 row even if there are multiple matches 
+       FROM users WHERE email = $1 LIMIT 1;`, // return only 1 row even if there are multiple matches
       [email],
     );
     return result.rows.length === 0 ? null : (result.rows[0] as UserResponse);
@@ -25,6 +25,8 @@ class AtuhService {
     );
     return result.rows[0] as UserResponse;
   }
+
+  // 
 }
 
 export default new AtuhService();

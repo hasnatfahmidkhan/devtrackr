@@ -1,14 +1,23 @@
 import type { NextFunction } from "express";
-import type { TReq, TRes } from "../../types";
+import type { jwtPayload, TReq, TRes } from "../../types";
 import asyncHandler from "../../utils/asyncHandler";
 import type { SignupBody, UserRole } from "./auth.interface";
 import authService from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
 import bcrypt from "bcrypt";
+import { signToken } from "../../utils/jwt";
 
 // use regex to validate email
 const isValidEmail = (email: string): boolean =>
   /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+
+// set cookie
+const setCookie = (res: TRes, name: string, value: string) => {
+  res.cookie(name, value, {
+    httpOnly: true,
+    sameSite: "lax",
+  });
+};
 
 class AuthController {
   // signup
@@ -61,20 +70,29 @@ class AuthController {
     };
 
     const newUser = await authService.createUser(payload);
+
+    const jwtPayload = {
+      id: newUser.id,
+      name: newUser.name,
+      role: newUser.role,
+    } as jwtPayload;
+
+    const { accessToken, refreshToken } = signToken(jwtPayload);
+
+    setCookie(res, "resfreshToken", refreshToken);
+    
     return sendResponse(
       res,
       {
         message: "User registered successfully",
-        data: newUser,
+        data: { token: accessToken, user: newUser },
       },
       201,
     );
   });
 
   // login
-  login = asyncHandler(async (req: TReq, res: TRes, next: NextFunction) => {
-    
-  });
+  login = asyncHandler(async (req: TReq, res: TRes, next: NextFunction) => {});
 }
 
 export default new AuthController();
