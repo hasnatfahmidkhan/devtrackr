@@ -7,6 +7,11 @@ export interface SignupBody {
   role?: UserRole;
 }
 
+export interface LoginBody {
+  email: string;
+  password: string;
+}
+
 export interface UserResponse {
   id: number;
   name: string;

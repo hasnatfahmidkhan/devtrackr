@@ -1,6 +1,5 @@
 import jwt, { type JwtPayload, type Secret } from "jsonwebtoken";
 import { config } from "../config";
-import type { jwtPayload } from "../types";
 
 
 
@@ -10,7 +9,7 @@ export const verifyToken = (token: string, type: "access" | "refresh") => {
   return decoded;
 };
 
-export const signToken = (payload: jwtPayload) => {
+export const signToken = (payload: JwtPayload) => {
   const accessToken = jwt.sign(payload, config.access_secret, {
     expiresIn: "7d",
   });

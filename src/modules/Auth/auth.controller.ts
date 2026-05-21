@@ -1,11 +1,18 @@
 import type { NextFunction } from "express";
 import type { jwtPayload, TReq, TRes } from "../../types";
 import asyncHandler from "../../utils/asyncHandler";
-import type { SignupBody, UserRole } from "./auth.interface";
+import type {
+  LoginBody,
+  SignupBody,
+  UserResponse,
+  UserRole,
+} from "./auth.interface";
 import authService from "./auth.service";
 import { sendResponse } from "../../utils/sendResponse";
 import bcrypt from "bcrypt";
 import { signToken } from "../../utils/jwt";
+import { validateLogin, validateSignup } from "./auth.validation";
+import type { JwtPayload } from "jsonwebtoken";
 
 // use regex to validate email
 const isValidEmail = (email: string): boolean =>
@@ -24,21 +31,8 @@ class AuthController {
   signup = asyncHandler(async (req: TReq, res: TRes, next: NextFunction) => {
     const { name, email, password, role } = req.body as SignupBody;
 
-    // ---- Validation (400) ----
-    const errors: Record<string, string> = {}; // key = field name, value = error message for that field
-
-    if (!name || name.trim().length === 0) errors.name = "name is required";
-    if (!email || email.trim().length === 0) errors.email = "email is required";
-    else if (!isValidEmail(email)) errors.email = "email is invalid";
-    if (!password || password.length === 0)
-      errors.password = "password is required";
-
-    const safeRole: UserRole = role ?? "contributor"; // if role is not provided, default to contributor
-    if (safeRole !== "contributor" && safeRole !== "maintainer") {
-      errors.role = "role must be contributor or maintainer";
-    }
-
-    if (Object.keys(errors).length > 0) {
+    const errors = validateSignup(req.body as SignupBody);
+    if (errors) {
       return sendResponse(
         res,
         { error: true, message: "Validation error", errors },
@@ -66,33 +60,54 @@ class AuthController {
       name: name.trim(),
       email: email.toLocaleLowerCase(),
       password: passwordHash,
-      role: safeRole,
+      role: role ?? "contributor",
     };
 
     const newUser = await authService.createUser(payload);
 
-    const jwtPayload = {
-      id: newUser.id,
-      name: newUser.name,
-      role: newUser.role,
-    } as jwtPayload;
-
-    const { accessToken, refreshToken } = signToken(jwtPayload);
-
-    setCookie(res, "resfreshToken", refreshToken);
-    
     return sendResponse(
       res,
       {
         message: "User registered successfully",
-        data: { token: accessToken, user: newUser },
+        data: newUser,
       },
       201,
     );
   });
 
   // login
-  login = asyncHandler(async (req: TReq, res: TRes, next: NextFunction) => {});
+  login = asyncHandler(async (req: TReq, res: TRes, next: NextFunction) => {
+    const body = req.body as LoginBody;
+
+    const errors = validateLogin(body);
+    if (errors) {
+      return sendResponse(
+        res,
+        { error: true, message: "Validation error", errors },
+        400,
+      );
+    }
+
+    const user = (await authService.validateUser(body)) as UserResponse;
+
+    const jwtPayload: JwtPayload = {
+      id: user.id,
+      name: user.name,
+      role: user.role,
+    };
+
+    const { accessToken, refreshToken } = signToken(jwtPayload);
+    setCookie(res, "refreshToken", refreshToken);
+
+    return sendResponse(
+      res,
+      {
+        message: "Login successful",
+        data: { token: accessToken, user: user },
+      },
+      200,
+    );
+  });
 }
 
 export default new AuthController();
