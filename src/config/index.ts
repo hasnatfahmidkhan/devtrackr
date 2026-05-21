@@ -1,7 +1,7 @@
 import dotenv from "dotenv";
 import { env } from "node:process";
 
-dotenv.config();
+dotenv.config({ quiet: true });
 
 export const config = {
   port: env.PORT,
