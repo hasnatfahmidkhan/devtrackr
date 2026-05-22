@@ -6,8 +6,13 @@ import type {
   IIssueResponse,
   IssueQueryParams,
   IssueRow,
+  UpdateIssueBody,
 } from "./issues.interface";
-import { validateCreateIssue, validateIssueQuery } from "./issues.validation";
+import {
+  validateCreateIssue,
+  validateIssueQuery,
+  validateUpdateIssue,
+} from "./issues.validation";
 import { sendResponse } from "../../utils/sendResponse";
 import issuesService from "./issues.service";
 
@@ -125,6 +130,79 @@ class IssuesController {
       return sendResponse(
         res,
         { message: "Issue fetched successfully", data },
+        200,
+      );
+    },
+  );
+
+  //   update issue
+  updateIssue = asyncHandler(
+    async (req: TReq, res: TRes, next: NextFunction) => {
+      const id = Number(req.params.id);
+
+      if (isNaN(id)) {
+        return sendResponse(
+          res,
+          { error: true, message: "Invalid issue id" },
+          400,
+        );
+      }
+
+      const body = req.body as UpdateIssueBody;
+      // validate update body
+      const errors = validateUpdateIssue(body);
+      if (errors) {
+        return sendResponse(
+          res,
+          { error: true, message: "Validation error", errors },
+          400,
+        );
+      }
+
+      // check issue exists
+      const issue = await issuesService.findIssueById(id);
+      if (!issue) {
+        return sendResponse(
+          res,
+          { error: true, message: "Issue not found" },
+          404,
+        );
+      }
+
+      const user = req.user!; // user must exists
+
+      // Permission check
+      if (user.role === "contributor") {
+        // contributor can only update their OWN issue
+        if (issue.reporter_id !== user.id) {
+          return sendResponse(
+            res,
+            {
+              error: true,
+              message: "You can only update your own issues",
+            },
+            403,
+          );
+        }
+      }
+
+      // contributor can only update if status is "open"
+      if (issue.status !== "open") {
+        return sendResponse(
+          res,
+          {
+            error: true,
+            message: "You can only update issues that are open",
+          },
+          409, // conflict — spec uses 409 for business logic conflicts
+        );
+      }
+
+      // maintainer can update anything — no extra check needed
+      const updatedIssue = await issuesService.updateIssue(id, body);
+      return sendResponse(
+        res,
+        { message: "Issue updated successfully", data: updatedIssue },
         200,
       );
     },

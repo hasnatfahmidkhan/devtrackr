@@ -4,6 +4,7 @@ import type {
   IssueQueryParams,
   IssueRow,
   ReporterInfo,
+  UpdateIssueBody,
 } from "./issues.interface";
 
 class IssuesService {
@@ -124,6 +125,46 @@ class IssuesService {
       [id],
     );
     return result.rows.length === 0 ? null : (result.rows[0] as IssueRow);
+  }
+
+  // update issue
+  async updateIssue(id: number, payload: UpdateIssueBody) {
+    // build SET clause dynamically — only update provided fields
+    const fields: string[] = [];
+    const values: unknown[] = [];
+    let paramIndex = 1;
+    if (payload.title !== undefined) {
+      fields.push(`title = $${paramIndex}`);
+      values.push(payload.title.trim());
+      paramIndex++;
+    }
+
+    if (payload.description !== undefined) {
+      fields.push(`description = $${paramIndex}`);
+      values.push(payload.description.trim());
+      paramIndex++;
+    }
+
+    if (payload.type !== undefined) {
+      fields.push(`type = $${paramIndex}`);
+      values.push(payload.type);
+      paramIndex++;
+    }
+
+    // always update updated_at
+    fields.push(`updated_at = NOW()`);
+
+    // add id as last param for WHERE clause
+    values.push(id);
+
+    const result = await pool.query(
+      `UPDATE issues
+       SET ${fields.join(", ")}
+       WHERE id = $${paramIndex}
+       RETURNING id, title, description, type, status, reporter_id, created_at, updated_at;`,
+      values,
+    );
+    return result.rows[0] as IssueRow;
   }
 }
 

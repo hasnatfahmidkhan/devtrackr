@@ -1,16 +1,16 @@
 import type { UserRole } from "../Auth/auth.interface";
 
-export type TssueType = "bug" | "feature_request";
-export type TssueStatus = "open" | "in_progress" | "resolved";
-export type TssueSort = "newest" | "oldest";
+export type TIssueType = "bug" | "feature_request";
+export type TIssueStatus = "open" | "in_progress" | "resolved";
+export type TIssueSort = "newest" | "oldest";
 
 // what comes from DB — raw row
 export interface IssueRow {
   id: number;
   title: string;
   description: string;
-  type: TssueType;
-  status: TssueStatus;
+  type: TIssueType;
+  status: TIssueStatus;
   reporter_id: number;
   created_at: string;
   updated_at: string;
@@ -28,8 +28,8 @@ export interface IIssueResponse {
   id: number;
   title: string;
   description: string;
-  type: TssueType;
-  status: TssueStatus;
+  type: TIssueType;
+  status: TIssueStatus;
   reporter: ReporterInfo;
   created_at: string;
   updated_at: string;
@@ -39,11 +39,17 @@ export interface IIssueResponse {
 export interface CreateIssueBody {
   title: string;
   description: string;
-  type: TssueType;
+  type: TIssueType;
+}
+
+export interface UpdateIssueBody {
+  title?: string;
+  description?: string;
+  type?: TIssueType;
 }
 
 export interface IssueQueryParams {
-  sort?: TssueSort;
-  type?: TssueType;
-  status?: TssueStatus;
+  sort?: TIssueSort;
+  type?: TIssueType;
+  status?: TIssueStatus;
 }

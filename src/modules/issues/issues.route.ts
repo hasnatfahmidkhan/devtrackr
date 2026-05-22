@@ -1,6 +1,7 @@
 import { Router } from "express";
 import issuesController from "./issues.controller";
 import authenticate from "../../middlewares/authenticate";
+import authorize from "../../middlewares/authorize";
 
 const router = Router();
 
@@ -11,6 +12,9 @@ router.post("/", authenticate, issuesController.createIssue);
 router.get("/", issuesController.getAllIssues);
 
 // get issue by id
-router.get("/:id", issuesController.getIssueById)
+router.get("/:id", issuesController.getIssueById);
+
+// update issue by id
+router.patch("/:id", authenticate, issuesController.updateIssue);
 
 export const issuesRoute = router;
