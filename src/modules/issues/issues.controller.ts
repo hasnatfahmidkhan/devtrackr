@@ -84,6 +84,51 @@ class IssuesController {
       );
     },
   );
+
+  // get signle issue
+  getIssueById = asyncHandler(
+    async (req: TReq, res: TRes, next: NextFunction) => {
+      const id = Number(req.params.id);
+      // validate id is a number
+      if (isNaN(id)) {
+        return sendResponse(
+          res,
+          { error: true, message: "Invalid issue id" },
+          400,
+        );
+      }
+
+      const issue = await issuesService.findIssueById(id);
+      if (!issue) {
+        return sendResponse(
+          res,
+          { error: true, message: "Issue not found" },
+          404,
+        );
+      }
+
+      // fetch reporter info
+      const reporterInfo = await issuesService.getReportersByIds([
+        issue.reporter_id,
+      ]);
+
+      const { reporter_id, ...rest } = issue;
+      const data: IIssueResponse = {
+        ...rest,
+        reporter: reporterInfo.get(reporter_id) ?? {
+          id: reporter_id,
+          name: "Unknown",
+          role: "contributor",
+        },
+      };
+
+      return sendResponse(
+        res,
+        { message: "Issue fetched successfully", data },
+        200,
+      );
+    },
+  );
 }
 
 export default new IssuesController();

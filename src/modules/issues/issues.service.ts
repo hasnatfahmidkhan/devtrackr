@@ -70,7 +70,8 @@ class IssuesService {
 
     const result = await pool.query(
       `
-            SELECT * FROM issues
+            SELECT id, title, description, type, status, reporter_id, created_at, updated_at 
+            FROM issues
             ${whereClause}
             ${orderClause}
             
@@ -113,6 +114,16 @@ class IssuesService {
       });
     }
     return reporterMap;
+  }
+
+  //   find issue by id
+  async findIssueById(id: number) {
+    const result = await pool.query(
+      `SELECT id, title, description, type, status, reporter_id, created_at, updated_at
+       FROM issues WHERE id = $1 LIMIT 1;`,
+      [id],
+    );
+    return result.rows.length === 0 ? null : (result.rows[0] as IssueRow);
   }
 }
 
