@@ -207,6 +207,33 @@ class IssuesController {
       );
     },
   );
+
+  // delete issue — only maintainer can delete, and only if issue is not "in_progress"
+  deleteIssue = asyncHandler(
+    async (req: TReq, res: TRes, next: NextFunction) => {
+      const id = Number(req.params.id);
+
+      if (isNaN(id)) {
+        return sendResponse(
+          res,
+          { error: true, message: "Invalid issue id" },
+          400,
+        );
+      }
+      // check issue exists
+      const issue = await issuesService.findIssueById(id);
+      if (!issue) {
+        return sendResponse(
+          res,
+          { error: true, message: "Issue not found" },
+          404,
+        );
+      }
+      await issuesService.deleteIssue(id);
+
+      return sendResponse(res, { message: "Issue deleted successfully" }, 200);
+    },
+  );
 }
 
 export default new IssuesController();

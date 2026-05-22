@@ -17,4 +17,8 @@ router.get("/:id", issuesController.getIssueById);
 // update issue by id
 router.patch("/:id", authenticate, issuesController.updateIssue);
 
+// delete issue (only maintainer can delete issue) 
+router.delete("/:id", authenticate, authorize("maintainer"), issuesController.deleteIssue);
+
+
 export const issuesRoute = router;

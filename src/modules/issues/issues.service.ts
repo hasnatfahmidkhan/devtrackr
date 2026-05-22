@@ -166,6 +166,10 @@ class IssuesService {
     );
     return result.rows[0] as IssueRow;
   }
+
+  async deleteIssue(id: number) {
+    await pool.query(`DELETE FROM issues WHERE id = $1`, [id]);
+  }
 }
 
 export default new IssuesService();
