@@ -1,4 +1,4 @@
-import type { CreateIssueBody } from "./issues.interface";
+import type { CreateIssueBody, IssueQueryParams } from "./issues.interface";
 
 export const validateCreateIssue = (
   body: CreateIssueBody,
@@ -18,6 +18,35 @@ export const validateCreateIssue = (
   if (!body.type) errors.type = "type is required";
   else if (body.type !== "bug" && body.type !== "feature_request")
     errors.type = "type must be bug or feature_request";
+
+  return Object.keys(errors).length > 0 ? errors : null;
+};
+
+export const validateIssueQuery = (
+  query: IssueQueryParams,
+): Record<string, string> | null => {
+  const errors: Record<string, string> = {};
+
+  // validate sort param
+  if (query.sort && !["newest", "oldest"].includes(query.sort)) {
+    errors.sort = "sort must be newest or oldest";
+  }
+
+  // validate type param
+  if (
+    query.type &&
+    !["bug", "feature_request"].includes(query.type)
+  ) {
+    errors.type = "type must be bug or feature_request";
+  }
+
+  // validate status param
+  if (
+    query.status &&
+    !["open", "in_progress", "resolved"].includes(query.status)
+  ) {
+    errors.status = "status must be open, in_progress or resolved";
+  }
 
   return Object.keys(errors).length > 0 ? errors : null;
 };

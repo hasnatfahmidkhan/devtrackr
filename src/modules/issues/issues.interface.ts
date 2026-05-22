@@ -2,6 +2,7 @@ import type { UserRole } from "../Auth/auth.interface";
 
 export type TssueType = "bug" | "feature_request";
 export type TssueStatus = "open" | "in_progress" | "resolved";
+export type TssueSort = "newest" | "oldest";
 
 // what comes from DB — raw row
 export interface IssueRow {
@@ -39,4 +40,10 @@ export interface CreateIssueBody {
   title: string;
   description: string;
   type: TssueType;
-}   
+}
+
+export interface IssueQueryParams {
+  sort?: TssueSort;
+  type?: TssueType;
+  status?: TssueStatus;
+}
