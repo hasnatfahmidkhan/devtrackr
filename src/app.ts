@@ -16,7 +16,7 @@ app.get("/", async (req: TReq, res: TRes) => {
   sendResponse(
     res,
     {
-      message: "DevPlus Server is running!",
+      message: "DevTrackr Server is running!",
       data: undefined,
     },
     200,
