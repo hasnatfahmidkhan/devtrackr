@@ -4,6 +4,7 @@ import { sendResponse } from "./utils/sendResponse";
 import { authRoute } from "./modules/Auth/auth.route";
 import { globalErrorHandler } from "./middlewares/globalErrorHandler";
 import { issuesRoute } from "./modules/issues/issues.route";
+import notFound from "./middlewares/notFound";
 
 const app = express();
 
@@ -28,5 +29,6 @@ app.use("/api/auth", authRoute);
 // Issues routes
 app.use("/api/issues", issuesRoute);
 
+app.use(notFound);
 app.use(globalErrorHandler);
 export default app;

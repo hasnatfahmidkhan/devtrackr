@@ -2,12 +2,7 @@ import type { NextFunction } from "express";
 import { AppError } from "../utils/AppError";
 import type { TReq, TRes } from "../types";
 
-export const globalErrorHandler = (
-  err: any,
-  req: TReq,
-  res: TRes,
-  next: NextFunction,
-) => {
+export const globalErrorHandler = (err: unknown, req: TReq, res: TRes) => {
   if (err instanceof AppError) {
     return res.status(err.statusCode).json({
       success: false,
